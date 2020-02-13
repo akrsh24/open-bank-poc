@@ -1,18 +1,29 @@
 import React, { Component } from 'react';
 import '../account/accountBalance.css'
-import { Form, Row, Col, Input } from 'antd';
+import { Form, Row, Col } from 'antd';
 import { connect } from "react-redux";
 import { withRouter } from "react-router-dom";
 import { fetchNotifications } from '../redux/actions/actions';
-import TextArea from 'antd/lib/input/TextArea';
+import { AgGridReact } from 'ag-grid-react/lib/agGridReact';
+import 'ag-grid-community/dist/styles/ag-grid.css';
+import 'ag-grid-community/dist/styles/ag-theme-balham.css';
 
 const Notification = Form.create({ name: 'notification' })(
     class extends Component {
         constructor(props) {
             super(props);
             this.state = {
-                accountNumber: '',
-                message: ''
+                columnDefs: [
+                    {
+                        headerName: 'Account Number',
+                        field: 'accountNumber',
+                    },
+                    {
+                        headerName: 'Message',
+                        field: 'message',
+                    }
+                ],
+                rowData: []
             }
         }
 
@@ -21,50 +32,46 @@ const Notification = Form.create({ name: 'notification' })(
             this.props.fetchNotifications();
         }
 
-        getAllNotifications = (accNumber, message) => {
-            return (
-                <div>
-                    <Row gutter={24}>
-                        <Col>
-                            <Form.Item
-                                label="Account Number"
-                            >
-                                <Input
-                                    id="accountNumber"
-                                    value={accNumber}
-                                />
-                            </Form.Item>
-                        </Col>
-                    </Row>
-                    <Row gutter={24}>
-                        <Col>
-                            <Form.Item
-                                label="Message"
-                            >
-                                <TextArea
-                                    id="message"
-                                    value={message}
-                                />
-                            </Form.Item>
-                        </Col>
-                    </Row>
-                </div>
-            )
+        static getDerivedStateFromProps(nextProps, prevState) {
+            let nextState = {};
+            console.log("getDerivedStateFromProps", nextProps, nextState);
+            if ((nextProps.getAllNotificationsResponse !== undefined && nextProps.getAllNotificationsResponse !== '') && nextProps.getAllNotificationsResponse.data.context.entity.data !== prevState.rowData) {
+                nextState.rowData = nextProps.getAllNotificationsResponse.data.context.entity.data;
+            }
+
+            return nextState;
+        }
+
+        onGridReady = (params) => {
+            this.gridApi = params.api;
+            this.gridApi.sizeColumnsToFit();
+            this.gridColumnApi = params.columnApi;
+
         }
 
         render() {
-            console.log("Notification", this.props.getAllNotificationsResponse)
+            console.log("Notification value", this.state, this.props);
             return (
                 <div className="account-balance-div">
-                    <Form layout="horizontal" className="case-modal-form">
-                        {
-                            this.props.getAllNotificationsResponse && this.props.getAllNotificationsResponse.map(notification => {
-                                return (
-                                    this.getAllNotifications(notification.accountNumber, notification.message)
-                                )
-                            })
-                        }
-                    </Form>
+                    <h1 style={{color:"red", fontWeight:"bold"}}>All Notifications</h1>
+                    <Row>
+                        <Col>
+                            <div
+                                className="ag-theme-balham"
+                                style={{
+                                    height: '200px',
+                                    width: '100%'
+                                }}
+                            >
+                                <AgGridReact
+                                    columnDefs={this.state.columnDefs}
+                                    rowData={this.state.rowData}
+                                    onGridReady={this.onGridReady}
+                                >
+                                </AgGridReact>
+                            </div>
+                        </Col>
+                    </Row>
                 </div>
             );
         }
@@ -72,7 +79,7 @@ const Notification = Form.create({ name: 'notification' })(
 
 const mapStateToProps = (state) => {
     return {
-        getAllNotificationsResponse: state.financialTransactionReducer.getAllNotificationsResponse
+        getAllNotificationsResponse: state.notificationReducer.getAllNotificationsResponse
     };
 };
 
