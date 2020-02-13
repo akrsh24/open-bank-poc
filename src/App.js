@@ -9,9 +9,9 @@ import {
 import 'antd/dist/antd.css';
 import './App.css';
 import Home from './components/Home';
-import AccountBalance from './components/Account/AccountBalance';
-import FinancialTransaction from './components/Financial/FinancialTransaction';
-import Notification from './components/Notification/Notification';
+import AccountBalance from './components/account/accountBalance';
+import FinancialTransaction from './components/financial/financialTransaction';
+import Notification from './components/notification/notification';
 const { Header, Content, Sider } = Layout;
 
 
@@ -26,7 +26,7 @@ class App extends Component {
                 mode="horizontal"
                 style={{ lineHeight: '64px' }}
               >
-                <Menu.Item key="openBank"><Link to='/' style={{ color: '#f5222d', size: 60, marginLeft: 10 }}>Open Bank</Link></Menu.Item>
+                <Menu.Item key="openBank"><Link to='/' style={{ color: '#f5222d', size: 60, marginLeft: 10 }}>NBS</Link></Menu.Item>
               </Menu>
             </Header>
             <Layout>

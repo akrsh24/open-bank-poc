@@ -1,6 +1,9 @@
 import React, { Component } from 'react';
-import '../Account/AccountBalance.css'
-import { Form, Row, Col, Input, Button } from 'antd';
+import './accountBalance.css'
+import { Form, Row, Col, Input, Button, message } from 'antd';
+import { connect } from "react-redux";
+import { withRouter } from "react-router-dom";
+import { saveAccountBalance } from '../redux/actions/actions';
 
 const AccountBalance = Form.create({ name: 'account_balance' })(
     class extends Component {
@@ -16,14 +19,14 @@ const AccountBalance = Form.create({ name: 'account_balance' })(
         handleAccountNumber = (e) => {
             e.preventDefault();
             this.setState({
-                accountNumber: e
+                accountNumber: e.target.value
             });
         }
 
         handleBalance = (e) => {
             e.preventDefault();
             this.setState({
-                balance: e
+                balance: e.target.value
             });
         }
 
@@ -32,6 +35,16 @@ const AccountBalance = Form.create({ name: 'account_balance' })(
                 accountNumber: this.state.accountNumber,
                 balance: this.state.balance
             };
+            this.props.saveAccountBalance(savePayload).then(() => {
+                console.log("savePayload", this.props.saveAccountBalanceResponse);
+                if (this.props.saveAccountBalanceResponse.status >= 200 && this.props.saveAccountBalanceResponse.status < 300) {
+                    message.success(this.props.saveAccountBalanceResponse.data.context.entity.data);
+                    this.handleResetAccount();
+                }
+                else {
+                    message.error(this.props.saveAccountBalanceResponse.data.context.entity.data);
+                }
+            });
         }
 
         handleResetAccount = () => {
@@ -107,5 +120,11 @@ const AccountBalance = Form.create({ name: 'account_balance' })(
             );
         }
     })
+const mapStateToProps = (state) => {
+    return {
+        saveAccountBalanceResponse: state.accountBalanceReducer.saveAccountBalanceResponse
+    };
+};
 
-export default AccountBalance;
+
+export default withRouter(connect(mapStateToProps, { saveAccountBalance })(AccountBalance));

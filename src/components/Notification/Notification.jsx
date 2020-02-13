@@ -1,6 +1,9 @@
 import React, { Component } from 'react';
-import '../Account/AccountBalance.css'
-import { Form, Row, Col, Input, Button } from 'antd';
+import '../account/accountBalance.css'
+import { Form, Row, Col, Input } from 'antd';
+import { connect } from "react-redux";
+import { withRouter } from "react-router-dom";
+import { fetchNotifications } from '../redux/actions/actions';
 import TextArea from 'antd/lib/input/TextArea';
 
 const Notification = Form.create({ name: 'notification' })(
@@ -13,98 +16,65 @@ const Notification = Form.create({ name: 'notification' })(
             }
         }
 
-        handleAccountNumber = (e) => {
-            e.preventDefault();
-            this.setState({
-                accountNumber: e
-            });
+        componentDidMount() {
+            console.log("Entering Notification");
+            this.props.fetchNotifications();
         }
 
-        handleMessage = (e) => {
-            e.preventDefault();
-            this.setState({
-                message: e
-            });
-        }
-
-        handleSaveTransaction = () => {
-            let savePayload = {
-                accountNumber: this.state.accountNumber,
-                message: this.state.message
-            }
-        }
-
-        handleResetTransaction = () => {
-            this.props.form.setFieldsValue({
-                accountNumber: '',
-                message: ''
-            });
-            this.setState({
-                accountNumber: '',
-                message: ''
-            });
+        getAllNotifications = (accNumber, message) => {
+            return (
+                <div>
+                    <Row gutter={24}>
+                        <Col>
+                            <Form.Item
+                                label="Account Number"
+                            >
+                                <Input
+                                    id="accountNumber"
+                                    value={accNumber}
+                                />
+                            </Form.Item>
+                        </Col>
+                    </Row>
+                    <Row gutter={24}>
+                        <Col>
+                            <Form.Item
+                                label="Message"
+                            >
+                                <TextArea
+                                    id="message"
+                                    value={message}
+                                />
+                            </Form.Item>
+                        </Col>
+                    </Row>
+                </div>
+            )
         }
 
         render() {
-            const { getFieldDecorator } = this.props.form; return (
+            console.log("Notification", this.props.getAllNotificationsResponse)
+            return (
                 <div className="account-balance-div">
                     <Form layout="horizontal" className="case-modal-form">
-                        <Row gutter={24}>
-                            <Col>
-                                <Form.Item
-                                    label="Account Number"
-                                >
-                                    {getFieldDecorator(
-                                        "accountNumber",
-                                        {}
-                                    )(
-                                        <Input
-                                            id="accountNumber"
-                                            placeholder="Enter account number"
-                                            onChange={this.handleAccountNumber}
-                                        />)}
-                                </Form.Item>
-                            </Col>
-                        </Row>
-                        <Row gutter={24}>
-                            <Col>
-                                <Form.Item
-                                    label="Message"
-                                >
-                                    {getFieldDecorator(
-                                        "message",
-                                        {}
-                                    )(
-                                        <TextArea
-                                            id="message"
-                                            onChange={this.handleMessage}
-                                        />)}
-                                </Form.Item>
-                            </Col>
-                        </Row>
-                        <Row>
-                            <Col>
-                                <Button
-                                    id="saveNotification"
-                                    type="primary"
-                                    onClick={this.handleSaveTransaction}
-                                >
-                                    Save
-                                </Button>
-                                <Button
-                                    id="resetNotification"
-                                    type="danger"
-                                    onClick={this.handleResetTransaction}
-                                    style={{ marginLeft: "5px" }}
-                                >
-                                    Reset
-                                </Button>
-                            </Col>
-                        </Row>
+                        {
+                            this.props.getAllNotificationsResponse && this.props.getAllNotificationsResponse.map(notification => {
+                                return (
+                                    this.getAllNotifications(notification.accountNumber, notification.message)
+                                )
+                            })
+                        }
                     </Form>
                 </div>
             );
         }
     })
 
-export default Notification;
+const mapStateToProps = (state) => {
+    return {
+        getAllNotificationsResponse: state.financialTransactionReducer.getAllNotificationsResponse
+    };
+};
+
+export default withRouter(connect(mapStateToProps, { fetchNotifications })(Notification));
+

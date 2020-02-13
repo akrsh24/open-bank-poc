@@ -1,6 +1,9 @@
 import React, { Component } from 'react';
-import '../Account/AccountBalance.css'
-import { Form, Row, Col, Input, Button } from 'antd';
+import '../account/accountBalance.css'
+import { Form, Row, Col, Input, Button, message } from 'antd';
+import { connect } from "react-redux";
+import { withRouter } from "react-router-dom";
+import { saveFinancialTransaction } from '../redux/actions/actions';
 
 const FinancialTransaction = Form.create({ name: 'financial_transaction' })(
     class extends Component {
@@ -16,30 +19,40 @@ const FinancialTransaction = Form.create({ name: 'financial_transaction' })(
         handleAccountNumber = (e) => {
             e.preventDefault();
             this.setState({
-                accountNumber: e
+                accountNumber: e.target.value
             });
         }
 
         handleTransactionID = (e) => {
             e.preventDefault();
             this.setState({
-                txnID: e
+                txnID: e.target.value
             });
         }
 
         handleTransactionAmount = (e) => {
             e.preventDefault();
             this.setState({
-                txnAmount: e
+                txnAmount: e.target.value
             });
         }
 
         handleSaveTransaction = () => {
             let savePayload = {
                 accountNumber: this.state.accountNumber,
-                txnID: this.state.txnID,
-                txnAmount: this.state.txnAmount
+                transactionId: this.state.txnID,
+                transactionAmount: this.state.txnAmount
             };
+            this.props.saveFinancialTransaction(savePayload).then(() => {
+                console.log("savePayload", this.props.saveFinancialTxnResponse);
+                if (this.props.saveFinancialTxnResponse.status >= 200 && this.props.saveFinancialTxnResponse.status < 300) {
+                    message.success(this.props.saveFinancialTxnResponse.data.context.entity.data);
+                    this.handleResetTransaction();
+                }
+                else {
+                    message.error(this.props.saveFinancialTxnResponse.data.context.entity.data);
+                }
+            });
         }
 
         handleResetTransaction = () => {
@@ -134,6 +147,12 @@ const FinancialTransaction = Form.create({ name: 'financial_transaction' })(
                 </div>
             );
         }
-    })
+    });
 
-export default FinancialTransaction;
+const mapStateToProps = (state) => {
+    return {
+        saveFinancialTxnResponse: state.financialTransactionReducer.saveFinancialTxnResponse
+    };
+};
+
+export default withRouter(connect(mapStateToProps, { saveFinancialTransaction })(FinancialTransaction));
